@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-paper font-sans text-ink;
+    }
+
+    ::selection {
+        @apply bg-brass-light text-ink;
+    }
+}

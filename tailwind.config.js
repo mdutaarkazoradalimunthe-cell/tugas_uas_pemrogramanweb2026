@@ -1,4 +1,3 @@
-import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 
 /** @type {import('tailwindcss').Config} */
@@ -11,8 +10,27 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                paper: '#F8F5EF',
+                ink: '#21261F',
+                evergreen: {
+                    DEFAULT: '#1F4D3A',
+                    dark: '#17392B',
+                },
+                brass: {
+                    DEFAULT: '#B48A4A',
+                    light: '#D8C39A',
+                },
+                blush: {
+                    DEFAULT: '#C97878',
+                    dark: '#A85E5E',
+                },
+                mist: '#E7E1D6',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                display: ['Fraunces', 'serif'],
+                sans: ['Inter', 'sans-serif'],
+                mono: ['"IBM Plex Mono"', 'monospace'],
             },
         },
     },

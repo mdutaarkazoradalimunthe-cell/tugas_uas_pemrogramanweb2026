@@ -1,4 +1,9 @@
 <x-guest-layout>
+    <div class="mb-8 text-center">
+        <h1 class="text-2xl font-semibold text-ink">Buat Akun</h1>
+        <p class="mt-2 text-sm text-ink/50">Mulai buat undangan digital dengan RSVP yang rapi.</p>
+    </div>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -40,7 +45,7 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
+            <a class="underline text-sm text-ink/50 hover:text-evergreen rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-evergreen" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
             </a>
 

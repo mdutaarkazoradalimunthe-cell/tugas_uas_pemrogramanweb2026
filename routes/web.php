@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RsvpController;
+use App\Models\Event;
+use App\Models\Rsvp;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -11,7 +13,24 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $userId = auth()->id();
+
+    $events = Event::withCount('rsvps')
+        ->where('user_id', $userId)
+        ->latest()
+        ->take(5)
+        ->get();
+
+    $eventIds = Event::where('user_id', $userId)->pluck('id');
+
+    return view('dashboard', [
+        'events' => $events,
+        'totalEvents' => $eventIds->count(),
+        'totalResponses' => Rsvp::whereIn('event_id', $eventIds)->count(),
+        'totalGuests' => Rsvp::whereIn('event_id', $eventIds)
+            ->where('status_hadir', 'hadir')
+            ->sum('jumlah_orang'),
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/undangan/{slug}', [RsvpController::class, 'show'])->name('rsvp.show');
