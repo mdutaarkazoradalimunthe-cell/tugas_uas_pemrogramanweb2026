@@ -29,4 +29,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // 1 user bisa punya banyak event
+    public function events()
+    {
+        return $this->hasMany(Event::class);
+    }
 }
