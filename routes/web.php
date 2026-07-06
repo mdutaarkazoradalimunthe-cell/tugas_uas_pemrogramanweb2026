@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RsvpController;
@@ -47,6 +48,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/templates/{template}', [TemplateController::class, 'show'])->name('templates.show');
 
     Route::resource('events', EventController::class);
+
+    Route::post('/subscription/upgrade', [SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
+    Route::post('/subscription/downgrade', [SubscriptionController::class, 'downgrade'])->name('subscription.downgrade');
 });
 
 require __DIR__.'/auth.php';

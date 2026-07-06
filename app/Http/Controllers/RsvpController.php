@@ -15,13 +15,25 @@ class RsvpController extends Controller
      */
     public function show(string $slug)
     {
-        $event = Event::where('unique_slug', $slug)->firstOrFail();
+        $event = Event::with('musics', 'user')->where('unique_slug', $slug)->firstOrFail();
 
         // Ambil ucapan yang tidak disembunyikan, untuk ditampilkan di halaman
         $rsvps = Rsvp::where('event_id', $event->id)
             ->where('is_hidden', false)
             ->latest()
             ->get();
+
+        if ($event->template->event_type === 'pernikahan') {
+            return view('invitations.pernikahan', compact('event', 'rsvps'));
+        }
+
+        if ($event->template->event_type === 'ulang_tahun') {
+            return view('invitations.ulang_tahun', compact('event', 'rsvps'));
+        }
+
+        if ($event->template->event_type === 'acara_lainnya') {
+            return view('invitations.acara_lainnya', compact('event', 'rsvps'));
+        }
 
         return view('rsvp.show', compact('event', 'rsvps'));
     }
@@ -55,7 +67,23 @@ class RsvpController extends Controller
      */
     public function edit(string $token)
     {
-        $rsvp = Rsvp::where('edit_token', $token)->firstOrFail();
+        $rsvp = Rsvp::with('event.template', 'event.musics', 'event.user')->where('edit_token', $token)->firstOrFail();
+        $event = $rsvp->event;
+
+        if ($event->template->event_type === 'pernikahan') {
+            $rsvps = Rsvp::where('event_id', $event->id)->where('is_hidden', false)->latest()->get();
+            return view('invitations.pernikahan', compact('event', 'rsvps', 'rsvp'));
+        }
+
+        if ($event->template->event_type === 'ulang_tahun') {
+            $rsvps = Rsvp::where('event_id', $event->id)->where('is_hidden', false)->latest()->get();
+            return view('invitations.ulang_tahun', compact('event', 'rsvps', 'rsvp'));
+        }
+
+        if ($event->template->event_type === 'acara_lainnya') {
+            $rsvps = Rsvp::where('event_id', $event->id)->where('is_hidden', false)->latest()->get();
+            return view('invitations.acara_lainnya', compact('event', 'rsvps', 'rsvp'));
+        }
 
         return view('rsvp.edit', compact('rsvp'));
     }

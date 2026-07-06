@@ -7,16 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 @php
     $isWedding = $event->template->event_type === 'pernikahan';
+    $isBirthday = $event->template->event_type === 'ulang_tahun';
+    $isOther = $event->template->event_type === 'acara_lainnya';
+    
     $cardClass = 'bg-white border border-mist/60 rounded-xl';
-    $titleClass = $isWedding ? 'text-evergreen' : 'text-blush';
+    $titleClass = $isWedding ? 'text-evergreen' : ($isBirthday ? 'text-blush' : 'text-brass');
     $buttonClass = $isWedding
         ? 'bg-evergreen text-paper hover:bg-evergreen-dark focus:ring-evergreen'
-        : 'bg-blush text-white hover:bg-blush-dark focus:ring-blush';
-    $inputFocusClass = $isWedding ? 'focus:border-evergreen focus:ring-evergreen' : 'focus:border-blush focus:ring-blush';
+        : ($isBirthday ? 'bg-blush text-white hover:bg-blush-dark focus:ring-blush' : 'bg-brass text-white hover:bg-brass focus:ring-brass');
+    $inputFocusClass = $isWedding ? 'focus:border-evergreen focus:ring-evergreen' : ($isBirthday ? 'focus:border-blush focus:ring-blush' : 'focus:border-brass focus:ring-brass');
 @endphp
 <body class="bg-paper min-h-screen px-4 py-16 text-ink antialiased">
     <div class="relative z-10 max-w-3xl mx-auto">
@@ -27,64 +30,20 @@
         @endif
 
         {{-- Kartu Undangan --}}
-        <div class="{{ $cardClass }} overflow-hidden">
-            <div class="px-10 py-12 md:px-12 md:py-16 text-center">
-                @if ($isWedding)
-                    <p class="text-xs uppercase tracking-wider text-ink/50 mb-4">Undangan Pernikahan</p>
-                    <h1 class="font-display text-4xl font-semibold {{ $titleClass }}">
-                        {{ $event->nama_mempelai_wanita }} & {{ $event->nama_mempelai_pria }}
-                    </h1>
-                @else
-                    <p class="text-xs uppercase tracking-wider text-ink/50 mb-4">Undangan Ulang Tahun</p>
-                    <h1 class="font-display text-4xl font-semibold {{ $titleClass }}">{{ $event->nama_acara }}</h1>
-                @endif
-            </div>
-
-            <div class="px-10 pb-12 md:px-12 space-y-8">
-                <div class="grid gap-6 text-center sm:grid-cols-3">
-                    <div>
-                        <p class="text-xs uppercase tracking-wider text-ink/50">Tanggal</p>
-                        <p class="mt-2 text-lg font-medium">{{ \Carbon\Carbon::parse($event->tanggal_utama)->translatedFormat('d F Y') }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs uppercase tracking-wider text-ink/50">Waktu</p>
-                        <p class="mt-2 text-lg font-medium">{{ \Carbon\Carbon::parse($event->jam_utama)->format('H:i') }} WIB</p>
-                    </div>
-                    <div>
-                        <p class="text-xs uppercase tracking-wider text-ink/50">Lokasi</p>
-                        <p class="mt-2 text-lg font-medium">{{ $event->lokasi_utama }}</p>
-                    </div>
-                </div>
-
-                @if ($isWedding && $event->tanggal_resepsi)
-                    <div class="border-t border-mist/60 pt-8 text-center">
-                        <p class="text-xl font-semibold text-evergreen mb-4">Resepsi</p>
-                        <div class="grid gap-6 sm:grid-cols-3">
-                            <div>
-                                <p class="text-xs uppercase tracking-wider text-ink/50">Tanggal</p>
-                                <p class="mt-2 font-medium">{{ \Carbon\Carbon::parse($event->tanggal_resepsi)->translatedFormat('d F Y') }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs uppercase tracking-wider text-ink/50">Waktu</p>
-                                <p class="mt-2 font-medium">{{ \Carbon\Carbon::parse($event->jam_resepsi)->format('H:i') }} WIB</p>
-                            </div>
-                            <div>
-                                <p class="text-xs uppercase tracking-wider text-ink/50">Lokasi</p>
-                                <p class="mt-2 font-medium">{{ $event->lokasi_resepsi }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if ($isWedding)
-                    <div class="border-t border-mist/60 pt-8 text-center text-sm text-ink/50">
-                        <p>Putri/Putra dari Bapak {{ $event->nama_ortu_wanita }}</p>
-                        <p class="my-2">&</p>
-                        <p>Putra/Putri dari Bapak {{ $event->nama_ortu_pria }}</p>
-                    </div>
-                @endif
-            </div>
-        </div>
+        <x-invitation-card
+            :eventType="$event->template->event_type"
+            :layoutType="$event->layout_type"
+            :namaAcara="$event->nama_acara"
+            :tanggalUtama="\Carbon\Carbon::parse($event->tanggal_utama)->translatedFormat('d F Y')"
+            :jamUtama="\Carbon\Carbon::parse($event->jam_utama)->format('H:i')"
+            :lokasiUtama="$event->lokasi_utama"
+            :namaMempelaiPria="$event->nama_mempelai_pria"
+            :namaMempelaiWanita="$event->nama_mempelai_wanita"
+            :namaOrtuPria="$event->nama_ortu_pria"
+            :namaOrtuWanita="$event->nama_ortu_wanita"
+            :fotoUrl="$event->foto_utama_url"
+            :templateName="$event->template->nama_template"
+        />
 
         {{-- Form RSVP --}}
         <div class="{{ $cardClass }} p-10 md:p-12 mt-12">

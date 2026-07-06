@@ -7,16 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 @php
     $isWedding = $rsvp->event->template->event_type === 'pernikahan';
+    $isBirthday = $rsvp->event->template->event_type === 'ulang_tahun';
+    $isOther = $rsvp->event->template->event_type === 'acara_lainnya';
+    
     $cardClass = 'bg-white border border-mist/60 rounded-xl';
-    $titleClass = $isWedding ? 'text-evergreen' : 'text-blush';
+    $titleClass = $isWedding ? 'text-evergreen' : ($isBirthday ? 'text-blush' : 'text-brass');
     $buttonClass = $isWedding
         ? 'bg-evergreen text-paper hover:bg-evergreen-dark focus:ring-evergreen'
-        : 'bg-blush text-white hover:bg-blush-dark focus:ring-blush';
-    $inputFocusClass = $isWedding ? 'focus:border-evergreen focus:ring-evergreen' : 'focus:border-blush focus:ring-blush';
+        : ($isBirthday ? 'bg-blush text-white hover:bg-blush-dark focus:ring-blush' : 'bg-brass text-white hover:bg-brass focus:ring-brass');
+    $inputFocusClass = $isWedding ? 'focus:border-evergreen focus:ring-evergreen' : ($isBirthday ? 'focus:border-blush focus:ring-blush' : 'focus:border-brass focus:ring-brass');
 @endphp
 <body class="bg-paper min-h-screen px-4 py-16 text-ink antialiased">
     <div class="relative z-10 max-w-3xl mx-auto">
@@ -26,15 +29,25 @@
             </div>
         @endif
 
-        <div class="{{ $cardClass }} p-10 md:p-12 mb-12 text-center">
-            <p class="text-xs uppercase tracking-wider text-ink/50">Undangan</p>
-            <h1 class="mt-3 font-display text-4xl font-semibold {{ $titleClass }}">{{ $rsvp->event->nama_acara }}</h1>
-            <p class="mt-4 text-sm text-ink/50">
-                {{ \Carbon\Carbon::parse($rsvp->event->tanggal_utama)->translatedFormat('d F Y') }}
-                • {{ $rsvp->event->lokasi_utama }}
-            </p>
+        {{-- Kartu Undangan --}}
+        <div class="mb-12">
+            <x-invitation-card
+                :eventType="$rsvp->event->template->event_type"
+                :layoutType="$rsvp->event->layout_type"
+                :namaAcara="$rsvp->event->nama_acara"
+                :tanggalUtama="\Carbon\Carbon::parse($rsvp->event->tanggal_utama)->translatedFormat('d F Y')"
+                :jamUtama="\Carbon\Carbon::parse($rsvp->event->jam_utama)->format('H:i')"
+                :lokasiUtama="$rsvp->event->lokasi_utama"
+                :namaMempelaiPria="$rsvp->event->nama_mempelai_pria"
+                :namaMempelaiWanita="$rsvp->event->nama_mempelai_wanita"
+                :namaOrtuPria="$rsvp->event->nama_ortu_pria"
+                :namaOrtuWanita="$rsvp->event->nama_ortu_wanita"
+                :fotoUrl="$rsvp->event->foto_utama_url"
+                :templateName="$rsvp->event->template->nama_template"
+            />
         </div>
 
+        {{-- Form Edit RSVP --}}
         <div class="{{ $cardClass }} p-10 md:p-12">
             <h2 class="text-2xl font-semibold mb-1 text-center {{ $titleClass }}">Edit RSVP Kamu</h2>
             <p class="text-sm text-ink/50 text-center mb-6">Ubah data di bawah kalau ada yang perlu diperbaiki</p>
