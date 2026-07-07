@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class EventMusic extends Model
 {
@@ -24,6 +23,6 @@ class EventMusic extends Model
 
     public function getAudioUrlAttribute()
     {
-        return $this->file_path ? asset('storage/' . $this->file_path) : null;
+        return $this->file_path;
     }
 }

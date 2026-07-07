@@ -64,6 +64,6 @@ class Event extends Model
     public function getFotoUtamaUrlAttribute()
     {
         $image = $this->images()->where('slot_name', 'foto_utama')->first();
-        return $image ? asset('storage/' . $image->image_path) : null;
+        return $image ? $image->image_path : null;
     }
 }
