@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Event;
 use App\Models\EventImage;
 use App\Models\Template;
+use App\Services\CloudinaryService;
 
 class EventController extends Controller
 {
+    protected $cloudinary;
+
+    public function __construct(CloudinaryService $cloudinary)
+    {
+        $this->cloudinary = $cloudinary;
+    }
+
     public function index()
     {
         $events = Event::where('user_id', auth()->id())->get();
@@ -27,6 +34,17 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
+        \Log::info('DEBUG store() dipanggil', [
+            'hasFile_foto_utama' => $request->hasFile('foto_utama'),
+            'all_files' => $request->allFiles(),
+            'file_foto_utama_info' => $request->hasFile('foto_utama') ? [
+                'originalName' => $request->file('foto_utama')->getClientOriginalName(),
+                'size' => $request->file('foto_utama')->getSize(),
+                'mimeType' => $request->file('foto_utama')->getMimeType(),
+                'isValid' => $request->file('foto_utama')->isValid(),
+            ] : 'TIDAK ADA FILE TERKIRIM',
+        ]);
+
         $validated = $request->validate([
             'template_id' => 'required|exists:templates,id',
             'layout_type' => 'required|in:foto_atas,foto_samping,tanpa_foto',
@@ -59,25 +77,27 @@ class EventController extends Controller
         $event = Event::create($validated);
 
         if ($request->hasFile('foto_utama')) {
-            $path = $request->file('foto_utama')->store('events', 'public');
+            $url = $this->cloudinary->upload($request->file('foto_utama'), 'undangan-digital/event-images', 'image');
+            \Log::info('DEBUG hasil upload Cloudinary', ['url' => $url]);
             EventImage::create([
                 'event_id' => $event->id,
                 'slot_name' => 'foto_utama',
-                'image_path' => $path,
+                'image_path' => $url,
                 'urutan' => 0,
             ]);
         }
 
         if (auth()->user()->isPlus() && $request->hasFile('musik')) {
-            $path = $request->file('musik')->store('musics', 'public');
+            $url = $this->cloudinary->upload($request->file('musik'), 'undangan-digital/event-musics', 'video');
             $event->musics()->create([
                 'judul' => $request->file('musik')->getClientOriginalName(),
-                'file_path' => $path,
+                'file_path' => $url,
                 'auto_play' => $request->boolean('auto_play', true),
                 'urutan' => 0,
             ]);
         }
 
+        \Log::info('DEBUG store() selesai, akan redirect');
         return redirect()->route('events.index')->with('success', 'Undangan berhasil dibuat!');
     }
 
@@ -137,28 +157,30 @@ class EventController extends Controller
         $event->update($validated);
 
         if ($request->hasFile('foto_utama')) {
-            // Hapus foto lama
-            EventImage::where('event_id', $event->id)->where('slot_name', 'foto_utama')->delete();
+            $oldImage = EventImage::where('event_id', $event->id)->where('slot_name', 'foto_utama')->first();
+            if ($oldImage) {
+                $this->cloudinary->delete($oldImage->image_path);
+                $oldImage->delete();
+            }
 
-            // Upload foto baru
-            $path = $request->file('foto_utama')->store('events', 'public');
+            $url = $this->cloudinary->upload($request->file('foto_utama'), 'undangan-digital/event-images', 'image');
             EventImage::create([
                 'event_id' => $event->id,
                 'slot_name' => 'foto_utama',
-                'image_path' => $path,
+                'image_path' => $url,
                 'urutan' => 0,
             ]);
         }
 
         if (auth()->user()->isPlus() && $request->hasFile('musik')) {
             foreach ($event->musics as $m) {
-                Storage::disk('public')->delete($m->file_path);
+                $this->cloudinary->delete($m->file_path);
                 $m->delete();
             }
-            $path = $request->file('musik')->store('musics', 'public');
+            $url = $this->cloudinary->upload($request->file('musik'), 'undangan-digital/event-musics', 'video');
             $event->musics()->create([
                 'judul' => $request->file('musik')->getClientOriginalName(),
-                'file_path' => $path,
+                'file_path' => $url,
                 'auto_play' => $request->boolean('auto_play', true),
                 'urutan' => 0,
             ]);
@@ -174,7 +196,11 @@ class EventController extends Controller
         }
 
         foreach ($event->musics as $m) {
-            Storage::disk('public')->delete($m->file_path);
+            $this->cloudinary->delete($m->file_path);
+        }
+
+        foreach ($event->images as $img) {
+            $this->cloudinary->delete($img->image_path);
         }
 
         $event->delete();
