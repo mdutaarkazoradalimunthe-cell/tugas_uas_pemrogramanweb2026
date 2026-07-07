@@ -12,10 +12,6 @@ class TemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear existing templates first (except those in use)
-        $usedTemplateIds = \DB::table('events')->pluck('template_id')->toArray();
-        Template::whereNotIn('id', $usedTemplateIds)->delete();
-        
         $templates = [
             // Pernikahan (3 templates)
             [
@@ -36,7 +32,7 @@ class TemplateSeeder extends Seeder
                 'deskripsi' => 'Template pernikahan modern dengan desain minimalis dan clean',
                 'preview_thumbnail' => 'gradient-slate-1',
             ],
-            
+
             // Ulang Tahun (3 templates)
             [
                 'event_type' => 'ulang_tahun',
@@ -56,7 +52,7 @@ class TemplateSeeder extends Seeder
                 'deskripsi' => 'Template ulang tahun dengan desain fun dan meriah untuk segala usia',
                 'preview_thumbnail' => 'gradient-blush-1',
             ],
-            
+
             // Acara Lainnya (2 templates)
             [
                 'event_type' => 'acara_lainnya',
@@ -73,10 +69,10 @@ class TemplateSeeder extends Seeder
         ];
 
         foreach ($templates as $template) {
-            // Skip if template with same name already exists
-            if (!Template::where('nama_template', $template['nama_template'])->exists()) {
-                Template::create($template);
-            }
+            Template::updateOrCreate(
+                ['event_type' => $template['event_type'], 'nama_template' => $template['nama_template']],
+                $template
+            );
         }
     }
 }

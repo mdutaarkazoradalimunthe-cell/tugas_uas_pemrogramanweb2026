@@ -8,6 +8,9 @@ php artisan view:cache
 # Jalankan migrasi database (aman dijalankan berulang, hanya migrasi baru yang dijalankan)
 php artisan migrate --force
 
+# Seed template (idempotent — updateOrCreate, tidak bikin duplikat)
+php artisan db:seed --class=TemplateSeeder --force
+
 # Jalankan PHP-FPM di background
 php-fpm -D
 
