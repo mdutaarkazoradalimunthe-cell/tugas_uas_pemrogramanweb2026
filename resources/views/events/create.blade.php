@@ -346,8 +346,8 @@
                                     </div>
                                 @endforeach
                                 @foreach(['foto_atas', 'foto_samping', 'tanpa_foto'] as $previewLayoutType)
-                                <div class="preview-variant hidden" data-preview-event-type="pernikahan" data-preview-layout-type="{{ $previewLayoutType }}" data-preview-template-name="Elegan Krem">
-                                        <x-invitation-wedding-card layoutType="{{ $previewLayoutType }}" :showRsvp="false" templateName="Elegan Krem" />
+                                <div class="preview-variant hidden" data-preview-event-type="pernikahan" data-preview-layout-type="{{ $previewLayoutType }}" data-preview-template-name="Elegan Hijau">
+                                        <x-invitation-wedding-card layoutType="{{ $previewLayoutType }}" :showRsvp="false" templateName="Elegan Hijau" />
                                     </div>
                                 @endforeach
                                 @foreach(['foto_atas', 'foto_samping', 'tanpa_foto'] as $previewLayoutType)
