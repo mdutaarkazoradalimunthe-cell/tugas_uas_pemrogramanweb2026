@@ -34,17 +34,6 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
-        \Log::info('DEBUG store() dipanggil', [
-            'hasFile_foto_utama' => $request->hasFile('foto_utama'),
-            'all_files' => $request->allFiles(),
-            'file_foto_utama_info' => $request->hasFile('foto_utama') ? [
-                'originalName' => $request->file('foto_utama')->getClientOriginalName(),
-                'size' => $request->file('foto_utama')->getSize(),
-                'mimeType' => $request->file('foto_utama')->getMimeType(),
-                'isValid' => $request->file('foto_utama')->isValid(),
-            ] : 'TIDAK ADA FILE TERKIRIM',
-        ]);
-
         $validated = $request->validate([
             'template_id' => 'required|exists:templates,id',
             'layout_type' => 'required|in:foto_atas,foto_samping,tanpa_foto',
@@ -78,7 +67,6 @@ class EventController extends Controller
 
         if ($request->hasFile('foto_utama')) {
             $url = $this->cloudinary->upload($request->file('foto_utama'), 'undangan-digital/event-images', 'image');
-            \Log::info('DEBUG hasil upload Cloudinary', ['url' => $url]);
             EventImage::create([
                 'event_id' => $event->id,
                 'slot_name' => 'foto_utama',
@@ -97,7 +85,6 @@ class EventController extends Controller
             ]);
         }
 
-        \Log::info('DEBUG store() selesai, akan redirect');
         return redirect()->route('events.index')->with('success', 'Undangan berhasil dibuat!');
     }
 
