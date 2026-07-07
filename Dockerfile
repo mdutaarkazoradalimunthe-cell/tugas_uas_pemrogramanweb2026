@@ -24,7 +24,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     nginx \
-    && docker-php-ext-install pdo pdo_pgsql pgsql zip
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip \
+    && echo "upload_max_filesize = 20M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 20M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
